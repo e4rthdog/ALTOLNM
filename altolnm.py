@@ -119,7 +119,7 @@ def main():
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
     print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file Of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.0\n\n")
 
     
     print("Detected default paths:")
