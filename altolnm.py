@@ -46,9 +46,10 @@ def reset_airport_table(sqlite_path):
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE airport SET is_addon = 0;")
+        # Reset is_addon and clear scenery_local_path
+        cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '';")
         conn.commit()
-        print("All airports are cleared from the addon airport status.")
+        print("All airports are cleared from the addon airport status and scenery paths have been reset.")
     except Exception as e:
         print(f"Error resetting the airport table: {e}")
     finally:
@@ -57,8 +58,12 @@ def reset_airport_table(sqlite_path):
         except Exception:
             pass
 
-def get_airport_idents_from_csv(csv_path):
-    idents = []
+def get_airport_info_from_csv(csv_path):
+    """
+    Reads the CSV file and returns a list of tuples:
+    (airport ident, scenery_local_path)
+    """
+    airport_info = []
     try:
         with open(csv_path, 'r', newline='', encoding='utf-8') as f:
             sample = f.read(1024)
@@ -71,32 +76,37 @@ def get_airport_idents_from_csv(csv_path):
             for row in reader:
                 if len(row) < 2:
                     continue
-                ident = row[1].strip()
-                if ident: 
-                    idents.append(ident)
+                scenery_local_path = row[0].strip()  # First field (scenery path)
+                ident = row[1].strip()               # Second field (airport ident)
+                if ident:
+                    airport_info.append((ident, scenery_local_path))
     except Exception as e:
-        print(f"Error reading MSFS Addons Linker CSV file for airport idents: {e}")
-    return idents
+        print(f"Error reading CSV file for airport info: {e}")
+    return airport_info
 
-def update_airport_with_idents(sqlite_path, idents):
-    if not idents:
-        print("No airport idents found in the MSFS Addons Linker CSV file to update.")
+def update_airport_with_info(sqlite_path, airport_info):
+    """
+    Updates the airport table setting is_addon = 1 and storing
+    the scenery_local_path from the CSV for each airport matching the ident.
+    """
+    if not airport_info:
+        print("No airport info found in the CSV file to update.")
         return
 
-    upper_idents = [ident.upper() for ident in idents]
-    
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        
-        placeholders = ','.join('?' for _ in upper_idents)
-        query = f"UPDATE airport SET is_addon = 1 WHERE UPPER(ident) IN ({placeholders});"
-        
-        cursor.execute(query, upper_idents)
+        updated_count = 0
+        for ident, scenery_path in airport_info:
+            cursor.execute(
+                "UPDATE airport SET is_addon = 1, scenery_local_path = ? WHERE UPPER(ident) = ?",
+                (scenery_path, ident.upper())
+            )
+            updated_count += cursor.rowcount
         conn.commit()
-        print(f"Update complete. Airports Added: {cursor.rowcount}")
+        print(f"Update complete. Airports Updated: {updated_count}")
     except Exception as e:
-        print(f"Error updating the airport table with idents: {e}")
+        print(f"Error updating the airport table with info: {e}")
     finally:
         try:
             conn.close()
@@ -117,11 +127,10 @@ def main():
     default_sqlite_path = os.path.join(default_sqlite_dir, default_sqlite_name)
 
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
-    print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file Of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
+    print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos - v1.0\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.1\n\n")
 
-    
     print("Detected default paths:")
     print(f"MSFS Addons Linker CSV file:      {default_csv_path}")
     print(f"Little NavMap SQLite DB:     {default_sqlite_path}\n")
@@ -143,14 +152,14 @@ def main():
     
     reset_airport_table(default_sqlite_path)
     
-    idents = get_airport_idents_from_csv(default_csv_path)
-    if not idents:
-        print("No valid airport idents found in the MSFS Addons Linker CSV file. Exiting.")
+    airport_info = get_airport_info_from_csv(default_csv_path)
+    if not airport_info:
+        print("No valid airport info found in the MSFS Addons Linker CSV file. Exiting.")
         return
     else:
-        print(f"Found {len(idents)} airport idents in the MSFS Addons Linker CSV file.")
+        print(f"Found {len(airport_info)} airport entries in the MSFS Addons Linker CSV file.")
     
-    update_airport_with_idents(default_sqlite_path, idents)
+    update_airport_with_info(default_sqlite_path, airport_info)
 
 if __name__ == "__main__":
     main()
