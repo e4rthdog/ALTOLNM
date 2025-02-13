@@ -1,6 +1,12 @@
 import os
+import sys
 import sqlite3
 import csv
+import colorama
+from colorama import Fore, Style
+
+# Initialize Colorama for consistent ANSI support across platforms
+colorama.init()
 
 def check_csv_file(file_path):
     if not os.path.isfile(file_path):
@@ -46,7 +52,7 @@ def reset_airport_table(sqlite_path):
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        # Reset is_addon and clear scenery_local_path
+        # Reset is_addon flag and clear scenery_local_path field
         cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '';")
         conn.commit()
         print("All airports are cleared from the addon airport status and scenery paths have been reset.")
@@ -88,6 +94,8 @@ def update_airport_with_info(sqlite_path, airport_info):
     """
     Updates the airport table setting is_addon = 1 and storing
     the scenery_local_path from the CSV for each airport matching the ident.
+    This update process prints its status on one line (overwriting previous output)
+    and clears the entire line before printing. Colorama is used for coloring the output.
     """
     if not airport_info:
         print("No airport info found in the CSV file to update.")
@@ -97,16 +105,36 @@ def update_airport_with_info(sqlite_path, airport_info):
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
         updated_count = 0
-        for ident, scenery_path in airport_info:
+        not_updated = []
+        total_records = len(airport_info)
+        print(f"Starting update process for {total_records} airport records...", end="")
+        
+        for index, (ident, scenery_path) in enumerate(airport_info, start=1):
             cursor.execute(
                 "UPDATE airport SET is_addon = 1, scenery_local_path = ? WHERE UPPER(ident) = ?",
                 (scenery_path, ident.upper())
             )
-            updated_count += cursor.rowcount
+            if cursor.rowcount == 0:
+                not_updated.append(ident)
+                status = f"[{index}/{total_records}] '{ident}': {Fore.RED}not found{Style.RESET_ALL}."
+            else:
+                updated_count += cursor.rowcount
+                status = f"[{index}/{total_records}] '{ident}': {Fore.GREEN}updated ({cursor.rowcount}){Style.RESET_ALL}."
+            
+            # Clear the entire line and print the status.
+            sys.stdout.write("\r\033[K" + status)
+            sys.stdout.flush()
+        
         conn.commit()
-        print(f"Update complete.")
+        # Final newline and summary.
+        print("\n\nUpdate complete.")
+        print(f"Total airports updated: {updated_count}.")
+        if not_updated:
+            print("Airports not updated (no matching ident found): " + ", ".join(not_updated))
+        else:
+            print("All airports from CSV have been updated successfully.")
     except Exception as e:
-        print(f"Error updating the airport table with info: {e}")
+        print(f"\nError updating the airport table with info: {e}")
     finally:
         try:
             conn.close()
@@ -129,11 +157,11 @@ def main():
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
     print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos - v1.1\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.0\n\n")
 
     print("Detected default paths:")
     print(f"MSFS Addons Linker CSV file:      {default_csv_path}")
-    print(f"Little NavMap SQLite DB:     {default_sqlite_path}\n")
+    print(f"Little NavMap SQLite DB:          {default_sqlite_path}\n")
 
     use_defaults = input("Do you want to use the default paths? (Y/n): ").strip().lower()
     if use_defaults == "n":
@@ -157,7 +185,7 @@ def main():
         print("No valid airport info found in the MSFS Addons Linker CSV file. Exiting.")
         return
     else:
-        print(f"Found {len(airport_info)} airport entries in the MSFS Addons Linker CSV file.")
+        print(f"Found {len(airport_info)} airport entries in the MSFS Addons Linker CSV file.\n")
     
     update_airport_with_info(default_sqlite_path, airport_info)
 
