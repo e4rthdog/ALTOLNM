@@ -104,7 +104,7 @@ def update_airport_with_info(sqlite_path, airport_info):
             )
             updated_count += cursor.rowcount
         conn.commit()
-        print(f"Update complete. Airports Updated: {updated_count}")
+        print(f"Update complete.")
     except Exception as e:
         print(f"Error updating the airport table with info: {e}")
     finally:
