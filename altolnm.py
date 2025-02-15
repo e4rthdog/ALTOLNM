@@ -49,7 +49,7 @@ def reset_airport_table(sqlite_path):
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '' WHERE bgl_filename <> 'ALTOLNM';")
+        cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '' WHERE is_addon=1 and bgl_filename <> 'ALTOLNM';")
         conn.commit()
         print("All airports are cleared from the addon airport status and scenery paths have been reset.")
     except Exception as e:
@@ -101,7 +101,7 @@ def update_airport_with_info(sqlite_path, airport_info):
         
         for index, (ident, scenery_path) in enumerate(airport_info, start=1):
             cursor.execute(
-                "UPDATE airport SET is_addon = 1, scenery_local_path = ? WHERE UPPER(ident) = ? and bgl_filename = 'ALTOLNM'",
+                "UPDATE airport SET is_addon = 1, scenery_local_path = ? , bgl_filename = 'ALTOLNM' WHERE UPPER(ident) = ? ",
                 (scenery_path, ident.upper())
             )
             if cursor.rowcount == 0:
