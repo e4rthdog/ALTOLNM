@@ -17,11 +17,8 @@ def check_csv_file(file_path):
             sample = f.read(1024)
             if not sample.strip():
                 return False, "CSV file is empty."
-            dialect = csv.Sniffer().sniff(sample)
-            if dialect.delimiter != ';':
-                return False, f"CSV file does not use ';' as the separator. Detected delimiter: '{dialect.delimiter}'"
             f.seek(0)
-            reader = csv.reader(f, dialect)
+            reader = csv.reader(f, delimiter=';')
             for row in reader:
                 pass
         return True, "MSFS Addons Linker CSV file is valid"
@@ -52,7 +49,6 @@ def reset_airport_table(sqlite_path):
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        # Reset is_addon flag and clear scenery_local_path field
         cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '';")
         conn.commit()
         print("All airports are cleared from the addon airport status and scenery paths have been reset.")
@@ -72,13 +68,7 @@ def get_airport_info_from_csv(csv_path):
     airport_info = []
     try:
         with open(csv_path, 'r', newline='', encoding='utf-8') as f:
-            sample = f.read(1024)
-            dialect = csv.Sniffer().sniff(sample)
-            if dialect.delimiter != ';':
-                print(f"CSV file delimiter is not ';' but '{dialect.delimiter}'.")
-                return []
-            f.seek(0)
-            reader = csv.reader(f, dialect)
+            reader = csv.reader(f, delimiter=';')
             for row in reader:
                 if len(row) < 2:
                     continue
