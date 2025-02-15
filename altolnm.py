@@ -101,7 +101,7 @@ def update_airport_with_info(sqlite_path, airport_info):
         
         for index, (ident, scenery_path) in enumerate(airport_info, start=1):
             cursor.execute(
-                "UPDATE airport SET is_addon = 1, scenery_local_path = ? WHERE UPPER(ident) = ? and WHERE bgl_filename = 'ALTOLNM'",
+                "UPDATE airport SET is_addon = 1, scenery_local_path = ? WHERE UPPER(ident) = ? and bgl_filename = 'ALTOLNM'",
                 (scenery_path, ident.upper())
             )
             if cursor.rowcount == 0:
@@ -147,7 +147,7 @@ def main():
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
     print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos - v1.1\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.20\n\n")
 
     print("Detected default paths:")
     print(f"MSFS Addons Linker CSV file:      {default_csv_path}")
