@@ -2,18 +2,35 @@ import os
 import sys
 import sqlite3
 import csv
+import subprocess
 import colorama
 from colorama import Fore, Style
 
 # Initialize Colorama for consistent ANSI support across platforms
 colorama.init()
 
+def detect_encoding(file_path, encodings=["utf-8", "cp1252", "latin-1", "iso-8859-1", "iso-8859-2", "windows-1250"]):
+    """
+    Attempts to read the file using each encoding in the list.
+    Returns the first encoding that successfully decodes a sample.
+    Raises an Exception if none work.
+    """
+    for enc in encodings:
+        try:
+            with open(file_path, 'r', newline='', encoding=enc) as f:
+                f.read(1024)
+            return enc
+        except Exception:
+            continue
+    raise Exception("Unable to decode file with provided encodings.")
+
 def check_csv_file(file_path):
     if not os.path.isfile(file_path):
         return False, f"CSV file does not exist at: {file_path}"
     
     try:
-        with open(file_path, 'r', newline='', encoding='utf-8') as f:
+        encoding = detect_encoding(file_path)
+        with open(file_path, 'r', newline='', encoding=encoding) as f:
             sample = f.read(1024)
             if not sample.strip():
                 return False, "CSV file is empty."
@@ -67,7 +84,8 @@ def get_airport_info_from_csv(csv_path):
     """
     airport_info = []
     try:
-        with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+        encoding = detect_encoding(csv_path)
+        with open(csv_path, 'r', newline='', encoding=encoding) as f:
             reader = csv.reader(f, delimiter=';')
             for row in reader:
                 if len(row) < 2:
@@ -147,7 +165,7 @@ def main():
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
     print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos - v1.20\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.30\n\n")
 
     print("Detected default paths:")
     print(f"MSFS Addons Linker CSV file:      {default_csv_path}")
