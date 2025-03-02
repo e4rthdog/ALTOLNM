@@ -39,3 +39,7 @@ The database file is named:
 The utility reads the CSV file and updates the airport table in the sqlite database. It updates 2 fields, the ident and the local file path field. Before doing so , it clears these 2 fields.
 
 **_IMPORTANT_** The utility DOES NOT insert or delete any record from either databases, only the operations described above.
+
+## Build executable
+
+Issue the command: `pyinstaller.exe --onefile .\altolnm.py --icon=icon.ico`
