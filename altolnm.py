@@ -66,7 +66,7 @@ def reset_airport_table(sqlite_path):
     try:
         conn = sqlite3.connect(sqlite_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '' WHERE is_addon=1 and bgl_filename <> 'ALTOLNM';")
+        cursor.execute("UPDATE airport SET is_addon = 0, scenery_local_path = '' WHERE bgl_filename = 'ALTOLNM';")
         conn.commit()
         print("All airports are cleared from the addon airport status and scenery paths have been reset.")
     except Exception as e:
@@ -173,8 +173,12 @@ def main():
 
     use_defaults = input("Do you want to use the default paths? (Y/n): ").strip().lower()
     if use_defaults == "n":
-        default_csv_path = input("Enter the full path for the MSFS Addons Linker CSV file: ").strip()
-        default_sqlite_path = input("Enter the full path for the Little NavMap database file: ").strip()
+        user_csv = input(f"Enter the full path for the MSFS Addons Linker CSV file (default: {default_csv_path}): ").strip()
+        if user_csv:
+            default_csv_path = user_csv
+        user_sqlite = input(f"Enter the full path for the Little NavMap database file (default: {default_sqlite_path}): ").strip()
+        if user_sqlite:
+            default_sqlite_path = user_sqlite
 
     print("\n--- Checking Files ---")
     csv_valid, csv_message = check_csv_file(default_csv_path)
