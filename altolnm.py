@@ -11,14 +11,14 @@ colorama.init()
 
 def detect_encoding(file_path, encodings=["utf-8", "cp1252", "latin-1", "iso-8859-1", "iso-8859-2", "windows-1250"]):
     """
-    Attempts to read the file using each encoding in the list.
-    Returns the first encoding that successfully decodes a sample.
+    Attempts to read the entire file using each encoding in the list.
+    Returns the first encoding that successfully decodes the whole file.
     Raises an Exception if none work.
     """
     for enc in encodings:
         try:
             with open(file_path, 'r', newline='', encoding=enc) as f:
-                f.read(1024)
+                f.read()  # Read the entire file to ensure full decoding
             return enc
         except Exception:
             continue
@@ -31,8 +31,8 @@ def check_csv_file(file_path):
     try:
         encoding = detect_encoding(file_path)
         with open(file_path, 'r', newline='', encoding=encoding) as f:
-            sample = f.read(1024)
-            if not sample.strip():
+            content = f.read()
+            if not content.strip():
                 return False, "CSV file is empty."
             f.seek(0)
             reader = csv.reader(f, delimiter=';')
