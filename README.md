@@ -1,45 +1,79 @@
 # ALTOLNM
 
-Little NavMap is not able to mark the airport as an addon because the procedure of building the database of MSFS 2024 changed.
+## Overview
 
-Therefore there is no indication in Little NavMap if an airport is an addon or not.
+Little NavMap is not able to mark airports as addons because the procedure for building the database of MSFS 2024 has changed. As a result, there is no indication in Little NavMap if an airport is an addon or not.
 
-I am using this feature a lot since i need to plan my next flight between airports that are addons and not default and also i need LNM for all other planning tasks.
+This utility addresses this issue by using the database of the popular MSFS Addons Linker 2024 edition to read the airports and mark them as addons in Little NavMap. This is particularly useful for planning flights between addon airports and for other planning tasks in Little NavMap.
 
-The uitility uses the database of popular MSFS Addons Linker 2024 edition to read the airports and then mark them as addons in Little NavMap.
+**Note**: Both developers of Little NavMap and MSFS Addons Linker have given their permission for this utility to be distributed.
 
-NOTE: Both developers of Little NavMap and MSFS Addons Linker gave their permission for this utility to be distributed.
+---
 
-Installation & Details:
+## Features
 
-The utility is a simple console .exe file. Just unzip somewhere and run it.
+- Reads the MSFS Addons Linker database to identify addon airports.
+- Updates the Little NavMap SQLite database to flag airports as addons.
+- Does not insert or delete any records from the databases—only updates specific fields.
 
-MSFS Addons Linker database usual location is:
+---
 
-`C:\ProgramData\MSFS Addons Linker 2024\Data`
+## Installation
 
-And the file name is:
+1. Download the utility and unzip it to a desired location.
+2. Run the executable file from the console.
 
-`Addons_ICAO.bin`
+### MSFS Addons Linker Database
+- **Default Location**: `C:\ProgramData\MSFS Addons Linker 2024\Data`
+- **File Name**: `Addons_ICAO.bin`
 
-**IMPORTANT!!! If you can't find the file in the AL folder above, run the duplicate check from the Tools -> Scan ICAO / Check for duplicates, and the file will be created.**
+**Important**: If the file is not found in the above folder, run the duplicate check from the MSFS Addons Linker menu: `Tools -> Scan ICAO / Check for duplicates`. This will create the file.
 
-This file although a database is a simple CSV text file with 2 fields. The first is the local file path of the scenery and the second one is the ICAO of the airport.
+The file is a simple CSV text file with two fields:
+1. The local file path of the scenery.
+2. The ICAO code of the airport.
 
-This means that any file that meets this format can be used to flag the airports as addon in LNM.
+Any file that meets this format can be used to flag airports as addons in Little NavMap.
 
-The Little NavMap database is an sqlite one and the location is usually at:
+### Little NavMap Database
+- **Default Location**: `%APPDATA%\ABarthel`
+- **File Name**: `little_navmap_msfs24.sqlite`
 
-`%APPDATA%\ABarthel`
+The utility reads the CSV file and updates the `airport` table in the SQLite database. It updates two fields:
+1. `ident`
+2. `scenery_local_path`
 
-The database file is named:
+Before updating, it clears these fields to ensure consistency.
 
-`little_navmap_msfs24.sqlite`
+**_IMPORTANT_**: The utility does not insert or delete any records from either database. It only performs the operations described above.
 
-The utility reads the CSV file and updates the airport table in the sqlite database. It updates 2 fields, the ident and the local file path field. Before doing so , it clears these 2 fields.
+---
 
-**_IMPORTANT_** The utility DOES NOT insert or delete any record from either databases, only the operations described above.
+## Usage
 
-## Build executable
+1. Ensure the MSFS Addons Linker database (`Addons_ICAO.bin`) and the Little NavMap database (`little_navmap_msfs24.sqlite`) are accessible.
+2. Run the utility from the console.
+3. Follow the on-screen instructions to confirm or override default file paths.
 
-Issue the command: `pyinstaller.exe --onefile .\altolnm.py --icon=icon.ico`
+---
+
+## Build Executable
+
+To build the executable from the source code, use the following command:
+
+```bash
+pyinstaller.exe --onefile .\altolnm.py --icon=icon.ico
+```
+
+---
+
+## Troubleshooting
+
+- **File Not Found**: Ensure the database files are in their default locations or provide the correct paths when prompted.
+- **Permission Issues**: Run the utility with administrative privileges if you encounter access issues.
+
+---
+
+## License
+
+This utility is distributed under the terms specified in the `LICENSE` file. Please refer to it for more details.
