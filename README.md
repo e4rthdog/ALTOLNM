@@ -27,6 +27,7 @@ This utility addresses this issue by using the database of the popular MSFS Addo
 
 - **Default Location**: `C:\ProgramData\MSFS Addons Linker 2024\Data`
 - **File Name**: `Addons_ICAO.bin`
+- **File Name (Custom/Optional)**: `Addons_ICAO_Custom.bin`
 
 **Important**: If the file is not found in the above folder, run the duplicate check from the MSFS Addons Linker menu: `Tools -> Scan ICAO / Check for duplicates`. This will create the file.
 
