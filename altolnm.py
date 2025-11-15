@@ -153,6 +153,10 @@ def main():
     default_csv_dir = r"C:\ProgramData\MSFS Addons Linker 2024\Data"
     default_csv_name = "Addons_ICAO.bin"
     default_csv_path = os.path.join(default_csv_dir, default_csv_name)
+    
+    # Optional custom CSV file that should be treated as part of the same dataset
+    custom_csv_name = "Addons_ICAO_Custom.bin"
+    custom_csv_path = os.path.join(default_csv_dir, custom_csv_name)
 
     appdata = os.environ.get('APPDATA')
     if appdata:
@@ -165,17 +169,22 @@ def main():
     print("ALTOLNM - A free utility to flag your MSFS Addons Linker airports as addon airports to Little NavMap MSFS 2024 database.\n")
     print("***Disclaimer:*** I am not responsible for any harm to the files that the utility accesses (the CSV file of MSFS Addons Linker and the Little NavMap SQLite database for MSFS2024).\n")
     print("NOTE: Little NavMap database must ALREADY be populated with the airports from MSFS 2024!\n")
-    print("(c) 2025 - Elias Stassinos - v1.30\n\n")
+    print("(c) 2025 - Elias Stassinos - v1.40\n\n")
 
     print("Detected default paths:")
-    print(f"MSFS Addons Linker CSV file:      {default_csv_path}")
-    print(f"Little NavMap SQLite DB:          {default_sqlite_path}\n")
+    print(f"MSFS Addons Linker CSV file:           {default_csv_path}")
+    print(f"Little NavMap SQLite DB:               {default_sqlite_path}\n")
 
     use_defaults = input("Do you want to use the default paths? (Y/n): ").strip().lower()
     if use_defaults == "n":
         user_csv = input(f"Enter the full path for the MSFS Addons Linker CSV file (default: {default_csv_path}): ").strip()
         if user_csv:
             default_csv_path = user_csv
+
+        # Custom CSV always resides in the same directory as the main CSV;
+        # its name is fixed and it is treated as optional.
+        custom_csv_path = os.path.join(os.path.dirname(default_csv_path), custom_csv_name)
+
         user_sqlite = input(f"Enter the full path for the Little NavMap database file (default: {default_sqlite_path}): ").strip()
         if user_sqlite:
             default_sqlite_path = user_sqlite
@@ -183,21 +192,38 @@ def main():
     print("\n--- Checking Files ---")
     csv_valid, csv_message = check_csv_file(default_csv_path)
     print(f"MSFS Addons Linker CSV file check: {csv_message}")
+
+    # Optional custom CSV: only check if the file exists
+    custom_csv_valid = False
+    if os.path.isfile(custom_csv_path):
+        custom_csv_valid, _ = check_csv_file(custom_csv_path)
+        print("Optional Custom CSV file: found and will be included.")
+    else:
+        print("Optional Custom CSV file: not found.")
+
     sqlite_valid, sqlite_message = check_sqlite_db(default_sqlite_path)
     print(f"Little NavMap SQLite database check: {sqlite_message}")
 
     if not (csv_valid and sqlite_valid):
-        print("One or more file checks failed. Exiting.")
+        print("One or more required file checks failed. Exiting.")
         return
     
     reset_airport_table(default_sqlite_path)
     
+    # Read main CSV (required)
     airport_info = get_airport_info_from_csv(default_csv_path)
+
+    # If custom CSV is valid, read and append its entries
+    if custom_csv_valid:
+        custom_airport_info = get_airport_info_from_csv(custom_csv_path)
+        airport_info.extend(custom_airport_info)
+        print(f"Loaded {len(custom_airport_info)} additional entries from custom CSV file.")
+
     if not airport_info:
-        print("No valid airport info found in the MSFS Addons Linker CSV file. Exiting.")
+        print("No valid airport info found in the MSFS Addons Linker CSV files. Exiting.")
         return
     else:
-        print(f"Found {len(airport_info)} airport entries in the MSFS Addons Linker CSV file.\n")
+        print(f"Total airport entries found (default + custom): {len(airport_info)}.\n")
     
     update_airport_with_info(default_sqlite_path, airport_info)
 
