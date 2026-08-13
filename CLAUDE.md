@@ -48,8 +48,8 @@ The program is a straight pipeline in `main()`:
 
 ## PyInstaller / stdin caveat
 
-`main()` uses `input()` for interactive prompts and there is a trailing `input("Press Enter to exit...")` at the bottom of the file. When the exe is launched without an attached stdin (e.g. built windowed, or launched by another process), `input()` raises `EOFError`. The spec ships with `console=True`, so double-clicking works — but any stdin-less launch will crash. Guard `input()` calls if this surfaces.
+`main()` uses `input()` for interactive prompts and there is a trailing `input("Press Enter to exit...")` at the bottom of the file. When the exe is launched without an attached stdin (e.g. built windowed, or launched by another process), `input()` raises `EOFError`. The spec ships with `console=True`, so double-clicking works. The exit prompt is already guarded with `try/except EOFError`, so a stdin-less launch exits cleanly. The interactive path prompts inside `main()` are **not** yet guarded — guard them the same way if a windowed/stdin-less build is ever shipped.
 
 ## Version string
 
-The user-facing version is a hardcoded print in `main()` (e.g. `v1.40`). Bump it there when releasing.
+The user-facing version is a hardcoded print in `main()` (currently `v1.50`). Bump it there when releasing.
