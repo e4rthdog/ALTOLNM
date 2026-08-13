@@ -8,6 +8,8 @@ ALTOLNM is a single-file Python CLI utility that flags MSFS Addons Linker airpor
 
 All logic lives in `altolnm.py`. There are no external modules, tests, or packages — it is intentionally a one-file program.
 
+A parallel `.github/copilot-instructions.md` covers the same project for GitHub Copilot; keep the two in sync when conventions change.
+
 ## Commands
 
 Run from source (interactive; prompts on stdin):
@@ -20,11 +22,11 @@ Install the only third-party dependency:
 pip install colorama
 ```
 
-Build the distributable Windows executable (spec-based, matches shipped build):
+Build the distributable Windows executable:
 ```bash
-pyinstaller altolnm.spec
+pyinstaller --onefile altolnm.py --icon=icon.ico
 ```
-The README documents a one-off equivalent: `pyinstaller --onefile altolnm.py --icon=icon.ico`. Prefer the `.spec` file — it is the source of truth for build settings (`console=True`, UPX on, `icon.ico`).
+This is the canonical build command (README + copilot instructions). Output lands in `dist/altolnm.exe`. Note: `.gitignore` excludes `build/`, `dist/`, and `*.spec`, so the `altolnm.spec` file present in a working tree is **not** version-controlled and won't exist in a fresh clone — don't rely on it. If regenerating a spec, the shipped build uses `console=True`, UPX on, and `icon.ico`.
 
 ## Data flow / architecture
 
